@@ -27,6 +27,7 @@ import java.util.Arrays;
 
 /** Classe pedido. Um pedido contém várias comidas (agregação) */
 public class Pedido implements Serializable {
+    
     private static final int MAXCOMIDAS;
     private static int ultPedido = 0;
     private int idPedido;

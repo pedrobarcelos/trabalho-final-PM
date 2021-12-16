@@ -27,16 +27,28 @@ import java.time.LocalDate;
 /** Cliente com 25% de desconto.
  *  Demonstração de composição vs herança
  */
-public class Cliente25 implements IFidelidade {
+public class Cliente25 extends Fidelidade {
+
+    private double desconto;
     /** Data de referência. */
     LocalDate data = LocalDate.now();
     /** Data de referência. */
     Data hoje = new Data(data.getDayOfMonth(),data.getMonthValue(), data.getYear());
 
-    /**
-     * Desconto do cliente: concedido com R$200 nos últimos 31 dias ou 50 pedidos no ano
-     */
-    @Override
+    public Cliente25(IFidelidade IFidelidade, double desconto) {
+        super(IFidelidade, desconto);
+    }
+
+    public double getDesconto()
+    {
+        return 0.25;
+    }
+
+    public void setDesconto(double taxa) {
+        this.desconto = taxa;
+        
+    }
+
     public double desconto(Pedido[] pedidos) {
         double desconto = 0.0;
         double valorPedidos=0.0;
@@ -52,8 +64,10 @@ public class Cliente25 implements IFidelidade {
             }
         }
 
-        if(valorPedidos>=200.00 || totalPedidos>=50)
+        if(valorPedidos>=200.00 || totalPedidos>=50){
             desconto = 0.25;
+            this.setDesconto(desconto);
+        }
 
 
         return desconto;

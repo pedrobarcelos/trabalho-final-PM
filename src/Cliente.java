@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -30,8 +31,12 @@ import java.util.Optional;
  * Classe cliente do restaurante. Contém pedidos (composição)
  * @author João Caram
  */
-public class  Cliente implements Serializable {
+public class  Cliente implements Serializable, IFidelidade {
 
+    /** Data de referência. */
+    LocalDate data = LocalDate.now();
+    /** Data de referência. */
+    Data hoje = new Data(data.getDayOfMonth(),data.getMonthValue(), data.getYear());
     /** Nome do cliente (livre) */
     public String nome;
     /** CPF do cliente (sem validação) */
@@ -42,6 +47,7 @@ public class  Cliente implements Serializable {
     private int qtPedidos;
     /** Categoria: injeção de dependência com interface. Composição em lugar de herança */
     private Optional <IFidelidade> categoriaFidelidade;
+    private double desconto;
 
 
     /**
@@ -67,7 +73,7 @@ public class  Cliente implements Serializable {
         if(this.qtPedidos < this.pedidos.length){
             this.pedidos[this.qtPedidos] = p;
             this.qtPedidos++;
-            this.mudarCategoria();
+            // this.mudarCategoria();
         }
         else
             resposta = false;
@@ -124,23 +130,27 @@ public class  Cliente implements Serializable {
         else return this.categoriaFidelidade.get().desconto(this.pedidos);
     }
 
+
+
     /**
      * Verifica mudança de categoria. Só verifica upgrades, não rebaixa o cliente.
      */
-    private void mudarCategoria(){
+    // private void mudarCategoria(){
 
-        IFidelidade teste;  //vou testar se ele pode subir de categoria
+    //     // IFidelidade fidelidade = new Cliente10(CPF, CPF);
+    //     // Fidelidade teste; //vou testar se ele pode subir de categoria
+    //     // teste = new IFidelidade(null, qtPedidos, qtPedidos);
 
-        if(this.categoriaFidelidade.isEmpty()){
-            teste = new Cliente10();
-        }
-        else{
-            teste = new Cliente25();
-        }
+    //     if(this.categoriaFidelidade.isEmpty()){
+    //         teste = new Cliente10(teste, qtPedidos, qtPedidos);
+    //     }
+    //     else{
+    //         teste = new Cliente25(teste, qtPedidos, qtPedidos);
+    //     }
 
-        if(teste.desconto(this.pedidos) > 0 )
-            this.categoriaFidelidade = Optional.of(teste);
-    }
+    //     if(teste.desconto(this.pedidos) > 0 )
+    //         this.categoriaFidelidade = Optional.of(teste);
+    // }
 
     public double somarValorpedidos(){
 
@@ -169,6 +179,42 @@ public class  Cliente implements Serializable {
         sb.append("  CPF: "+this.CPF+"\n");
         sb.append("Total de pedidos: "+this.qtPedidos+"\n");
         return sb.toString();
+    }
+
+    @Override
+    public void setDesconto(double desconto) {
+        this.desconto = desconto;    
+    }
+
+    @Override
+    public double getDesconto() {
+        return this.desconto;
+    }
+
+    @Override
+    public double desconto(Pedido[] pedidos) {
+            double desconto = 0.0;
+            double valorPedidos=0.0;
+            int totalPedidos = 0;
+            for (Pedido pedido : pedidos) {
+                if(pedido!=null){
+                    Data auxMes = pedido.dataPedido.acrescentaDias(31);
+                    Data auxAno = pedido.dataPedido.acrescentaDias(366);
+                    if(!hoje.maisRecente(auxMes))
+                        valorPedidos += pedido.valorTotal();
+                    if(!hoje.maisRecente(auxAno))
+                        totalPedidos++;
+                }
+            }
+    
+            if(valorPedidos>=200.00 || totalPedidos>=50){
+                desconto = 0.25;
+                // this.setDesconto(desconto);
+            }else if(valorPedidos>=100.00 || totalPedidos>=25){
+                desconto = 0.10;
+                // this.setDesconto(desconto);
+            }else desconto = 1;
+            return desconto;
     }
 
 
