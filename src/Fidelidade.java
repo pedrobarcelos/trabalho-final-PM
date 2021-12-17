@@ -1,17 +1,14 @@
 public abstract class Fidelidade implements IFidelidade{
-    
-    protected IFidelidade IFidelidade;
-    // protected double taxaDesconto;
-    protected double desconto;
+    protected IFidelidade iFidelidade;
 
-    public Fidelidade(IFidelidade IFidelidade, double desconto){
-            this.IFidelidade = IFidelidade;
-            // this.taxaDesconto = taxaDesconto;
-            this.desconto = desconto;
+    public Fidelidade(IFidelidade IFidelidade){
+            this.iFidelidade = IFidelidade;
     }
 
     // public abstract double getTaxaDesconto();
-
-    public abstract double desconto(Pedido[] pedido);
+    @Override
+    public double getDesconto(){
+        return iFidelidade.getDesconto();
+    }
 
 }

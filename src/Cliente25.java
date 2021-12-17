@@ -1,5 +1,3 @@
-import java.time.LocalDate;
-
 /**
  * MIT License
  *
@@ -28,48 +26,12 @@ import java.time.LocalDate;
  *  Demonstração de composição vs herança
  */
 public class Cliente25 extends Fidelidade {
-
-    private double desconto;
-    /** Data de referência. */
-    LocalDate data = LocalDate.now();
-    /** Data de referência. */
-    Data hoje = new Data(data.getDayOfMonth(),data.getMonthValue(), data.getYear());
-
-    public Cliente25(IFidelidade IFidelidade, double desconto) {
-        super(IFidelidade, desconto);
+    public Cliente25(IFidelidade iFidelidade){
+        super(iFidelidade);
     }
 
-    public double getDesconto()
-    {
-        return 0.25;
-    }
-
-    public void setDesconto(double taxa) {
-        this.desconto = taxa;
-        
-    }
-
-    public double desconto(Pedido[] pedidos) {
-        double desconto = 0.0;
-        double valorPedidos=0.0;
-        int totalPedidos = 0;
-        for (Pedido pedido : pedidos) {
-            if(pedido!=null){
-                Data auxMes = pedido.dataPedido.acrescentaDias(31);
-                Data auxAno = pedido.dataPedido.acrescentaDias(366);
-                if(!hoje.maisRecente(auxMes))
-                    valorPedidos += pedido.valorTotal();
-                if(!hoje.maisRecente(auxAno))
-                    totalPedidos++;
-            }
-        }
-
-        if(valorPedidos>=200.00 || totalPedidos>=50){
-            desconto = 0.25;
-            this.setDesconto(desconto);
-        }
-
-
-        return desconto;
+    @Override
+    public double getDesconto(){
+        return super.getDesconto() + 0.25;
     }
 }

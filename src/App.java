@@ -23,6 +23,8 @@
  * SOFTWARE.
  */
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
@@ -144,14 +146,14 @@ public class App {
         return c;
     }
 
-    // public static Cliente selecionarCliente(List<Cliente> clientes, String cpf) {
-    // Cliente c = null;
-    // c = clientes.stream()
-    // .filter(cliente -> cliente.getCPF().equals(cpf))
-    // .findFirst()
-    // .orElse(null);
-    // return c;
-    //// }
+    public static Cliente selecionarCliente(List<Cliente> clientes, String cpf) {
+        Cliente c = null;
+        c = clientes.stream()
+            .filter(cliente -> cliente.getCPF().equals(cpf))
+            .findFirst()
+            .orElse(null);
+        return c;
+    }
 
     /**
      * Apaga o pedido p e cria um novo
@@ -192,13 +194,52 @@ public class App {
 
     private static void fecharPedido(Pedido pedido, Cliente cliente) {
 
+        //Declarando decorator
+        IFidelidade clienteTest = cliente;
+
+        Pedido[] allPedidos = cliente.getPedidos();
+        double valorPedidos = 0.0;
+        int totalPedidos = 0;
+
+    
+        totalPedidos = allPedidos.length;
+
+        for(int i = 0; i < totalPedidos; i++){
+            if(allPedidos[i] != null)valorPedidos += allPedidos[i].valorTotal();
+        }
+
+        // System.out.println("Valor ja gasto no xulambs pelo cliente " + cliente.getNome() + ": " + valorPedidos);
+        // System.out.println("Total de Pedidos ja feitos pelo cliente" + cliente.getNome() + ": " + totalPedidos + "\n");
+
+        if(valorPedidos>= 100 || totalPedidos>=25){
+            clienteTest = new Cliente10(clienteTest); //DECORATOR
+        }else if(valorPedidos>= 200 || totalPedidos>=50){
+            clienteTest = new Cliente25(clienteTest); //DECORATOR
+        }
+
+        int tresMesesStack = 0;
+        LocalDate dataCadastro = cliente.data;
+        LocalDate hoje = LocalDate.now();
+        // Calcula a diferença de meses entre as duas datas
+        long diferencaEmMes = ChronoUnit.MONTHS.between(dataCadastro, hoje);
+        
+        //regra: a cada 3 meses cadastrado recebe 5% de desconto
+        tresMesesStack = (int)diferencaEmMes/3;
+
+        //respeitar o máximo de 20%
+        if(tresMesesStack>4)tresMesesStack = 4;
+        for(int i = 0; i < tresMesesStack; i++){
+            clienteTest = new DescontoPorTempo(clienteTest); //DECORATOR
+        }
+
         if (pedido != null) {
 
             pedido.fecharPedido();
-            double totPagar = pedido.valorTotal() * (1.0 - cliente.desconto());
+            double totPagar = pedido.valorTotal() * (1.0 - clienteTest.getDesconto());
             cliente.addPedido(pedido);
             System.out.println(pedido);
             System.out.println("Cliente " + cliente.nome + " Total R$ " + totPagar);
+            System.out.println("Desconto: " + (clienteTest.getDesconto() *100) + "%");
         } else
             System.out.print("Pedido ainda não foi aberto. ");
     }
@@ -206,74 +247,64 @@ public class App {
     // #endregion
 
     public static void main(String[] args) throws Exception {
-
-        Pedido[] pedidosTest = new Pedido[10];
-        IFidelidade clienteTest = new Cliente("pedro", "08597213612");
-        
-        //decorator em acao
-        clienteTest.desconto(pedidosTest);
-        clienteTest = new Cliente10(clienteTest, 0.600);
-        clienteTest = new Cliente25(clienteTest, 0.10);
-        System.out.println(clienteTest.getDesconto());
-        
-
+    
         Scanner teclado = new Scanner(System.in);
         List<Cliente> clientes = Arquivos.obterDados();
         Pedido pedido = null;
         Cliente cliente = null;
         int opcao = -1;
-        // do {
-        //     opcao = menu(teclado);
-        //     limparTela();
-        //     switch (opcao) {
-        //     case 1:
-        //         pedido = criarNovo(pedido);
-        //         pausa(teclado);
-        //         break;
-        //     case 2:
-        //         incluirComidaPedido(pedido, teclado);
-        //         pausa(teclado);
-        //         break;
-        //     case 3:
-        //         detalhesPedido(pedido);
-        //         pausa(teclado);
-        //         break;
-        //     case 4:
-        //         if (cliente != null) {
-        //             fecharPedido(pedido, cliente);
-        //         } else {
-        //             System.out.println(" Para prosseguir, selecione um cliente ");
-        //         }
-        //         pausa(teclado);
-        //         break;
-        //     case 5:
-        //         if (cliente != null) {
-        //             contabilidadePedidos(cliente, clientes);
-        //         }
-        //         pausa(teclado);
-        //         break;
-        //     case 6:
-        //         cadastrarCliente(teclado, clientes);
-        //         pausa(teclado);
-        //         break;
-        //     case 7:
-        //         if (!clientes.isEmpty()) {
-        //             cliente = selecionarCliente(teclado, clientes);
-        //         } else {
-        //             System.out.println(" Nenhum cliente cadastrado ");
-        //         }
-        //         pausa(teclado);
-        //         break;
-        //     case 8:
-        //         listarClientes(clientes);
-        //         pausa(teclado);
-        //         break;
-        //     }
-        // } while (opcao != 0);
-        // Arquivos.escreverDados(clientes);
+        do {
+            opcao = menu(teclado);
+            limparTela();
+            switch (opcao) {
+            case 1:
+                pedido = criarNovo(pedido);
+                pausa(teclado);
+                break;
+            case 2:
+                incluirComidaPedido(pedido, teclado);
+                pausa(teclado);
+                break;
+            case 3:
+                detalhesPedido(pedido);
+                pausa(teclado);
+                break;
+            case 4:
+                if (cliente != null) {
+                    fecharPedido(pedido, cliente);
+                } else {
+                    System.out.println(" Para prosseguir, selecione um cliente ");
+                }
+                pausa(teclado);
+                break;
+            case 5:
+                if (cliente != null) {
+                    contabilidadePedidos(cliente, clientes);
+                }
+                pausa(teclado);
+                break;
+            case 6:
+                cadastrarCliente(teclado, clientes);
+                pausa(teclado);
+                break;
+            case 7:
+                if (!clientes.isEmpty()) {
+                    cliente = selecionarCliente(teclado, clientes);
+                } else {
+                    System.out.println(" Nenhum cliente cadastrado ");
+                }
+                pausa(teclado);
+                break;
+            case 8:
+                listarClientes(clientes);
+                pausa(teclado);
+                break;
+            }
+        } while (opcao != 0);
+        Arquivos.escreverDados(clientes);
 
-        // System.out.println("FIM");
-        // teclado.close();
+        System.out.println("FIM");
+        teclado.close();
     }
 
     private static void listarClientes(List<Cliente> clientes) {

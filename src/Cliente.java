@@ -33,6 +33,10 @@ import java.util.Optional;
  */
 public class  Cliente implements Serializable, IFidelidade {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     /** Data de referência. */
     LocalDate data = LocalDate.now();
     /** Data de referência. */
@@ -47,7 +51,6 @@ public class  Cliente implements Serializable, IFidelidade {
     private int qtPedidos;
     /** Categoria: injeção de dependência com interface. Composição em lugar de herança */
     private Optional <IFidelidade> categoriaFidelidade;
-    private double desconto;
 
 
     /**
@@ -63,6 +66,19 @@ public class  Cliente implements Serializable, IFidelidade {
         this.categoriaFidelidade = null;
     }
 
+    public Cliente(String nome, String CPF, LocalDate date){
+        this.nome = nome;
+        this.CPF = CPF;
+        this.pedidos = new Pedido[1_000];
+        this.qtPedidos=0;
+        this.categoriaFidelidade = null;
+        this.data = date;
+    }
+
+    @Override
+    public double getDesconto() {
+            return 0;
+    }
     /**
      * Adiciona um pedido
      * @param p O pedido já pronto
@@ -73,7 +89,6 @@ public class  Cliente implements Serializable, IFidelidade {
         if(this.qtPedidos < this.pedidos.length){
             this.pedidos[this.qtPedidos] = p;
             this.qtPedidos++;
-            // this.mudarCategoria();
         }
         else
             resposta = false;
@@ -122,36 +137,6 @@ public class  Cliente implements Serializable, IFidelidade {
         this.categoriaFidelidade = Optional.of(categoriaFidelidade);
     }
 
-    /**
-     *
-     */
-    public double desconto(){
-        if(this.categoriaFidelidade.isEmpty()) return 0;
-        else return this.categoriaFidelidade.get().desconto(this.pedidos);
-    }
-
-
-
-    /**
-     * Verifica mudança de categoria. Só verifica upgrades, não rebaixa o cliente.
-     */
-    // private void mudarCategoria(){
-
-    //     // IFidelidade fidelidade = new Cliente10(CPF, CPF);
-    //     // Fidelidade teste; //vou testar se ele pode subir de categoria
-    //     // teste = new IFidelidade(null, qtPedidos, qtPedidos);
-
-    //     if(this.categoriaFidelidade.isEmpty()){
-    //         teste = new Cliente10(teste, qtPedidos, qtPedidos);
-    //     }
-    //     else{
-    //         teste = new Cliente25(teste, qtPedidos, qtPedidos);
-    //     }
-
-    //     if(teste.desconto(this.pedidos) > 0 )
-    //         this.categoriaFidelidade = Optional.of(teste);
-    // }
-
     public double somarValorpedidos(){
 
         return  Arrays.stream(this.pedidos)
@@ -180,43 +165,5 @@ public class  Cliente implements Serializable, IFidelidade {
         sb.append("Total de pedidos: "+this.qtPedidos+"\n");
         return sb.toString();
     }
-
-    @Override
-    public void setDesconto(double desconto) {
-        this.desconto = desconto;    
-    }
-
-    @Override
-    public double getDesconto() {
-        return this.desconto;
-    }
-
-    @Override
-    public double desconto(Pedido[] pedidos) {
-            double desconto = 0.0;
-            double valorPedidos=0.0;
-            int totalPedidos = 0;
-            for (Pedido pedido : pedidos) {
-                if(pedido!=null){
-                    Data auxMes = pedido.dataPedido.acrescentaDias(31);
-                    Data auxAno = pedido.dataPedido.acrescentaDias(366);
-                    if(!hoje.maisRecente(auxMes))
-                        valorPedidos += pedido.valorTotal();
-                    if(!hoje.maisRecente(auxAno))
-                        totalPedidos++;
-                }
-            }
-    
-            if(valorPedidos>=200.00 || totalPedidos>=50){
-                desconto = 0.25;
-                // this.setDesconto(desconto);
-            }else if(valorPedidos>=100.00 || totalPedidos>=25){
-                desconto = 0.10;
-                // this.setDesconto(desconto);
-            }else desconto = 1;
-            return desconto;
-    }
-
-
 
 }
